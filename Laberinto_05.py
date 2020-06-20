@@ -2,7 +2,7 @@
 
 import pygame, math, os
 
-os.chdir('d:\Marco\Documentos\8 - Python\Gusanillo\Pygame')
+# os.chdir('d:\Marco\Documentos\8 - Python\Gusanillo\Pygame')
 
 version = "Version 0.5"
 
@@ -21,25 +21,38 @@ sprite_ratio = 15
 # control_llave = True    # Llave no encontrada
 
 # Muros
-paso = True
-pointer = 1
+pointer = 0
 muros = []
 puertas = []
+keys = []
+ghosts = []
 archivo = open('pantalla.txt', 'r')
 for linea in archivo.readlines():
-    if linea == 'DOOR\n':
+    if linea == 'WALLS\n':
         pointer += 1
-        paso = False
-
-    if paso:
-        if pointer == 1:
+    elif linea == 'DOOR\n':
+        pointer += 1
+    elif linea == 'KEY\n':
+        pointer += 1
+    elif linea == 'PLAYER\n':
+        pointer += 1
+    elif linea == 'GHOST\n':
+        pointer += 1
+    else:
+        if pointer == 1: # Muros
             linea = tuple(map(int, linea.split(', ')))
             muros.append(pygame.Rect(linea))
-        elif pointer == 2:
+        elif pointer == 2: # Puerta
             linea = tuple(map(int, linea.split(', ')))
             puertas.append(pygame.Rect(linea))
-
-    paso = True
+        elif pointer == 3: # Llave
+            linea = tuple(map(int, linea.split(', ')))
+            keys.append(linea)
+        elif pointer == 4: # player
+            player_pos = tuple(map(int, linea.split(', ')))
+        elif pointer == 5: # ghost
+            linea = tuple(map(int, linea.split(', ')))
+            ghosts.append(linea)
 
 archivo.close()
 
@@ -87,7 +100,7 @@ class Player(pygame.sprite.Sprite):
 class Ghost(pygame.sprite.Sprite):
     def __init__(self):
         super().__init__()
-        self.image = pygame.image.load('Fantasma_left_30x30_2.png').convert()
+        self.image = pygame.image.load('Fantasma_left_30x30.png').convert()
         self.image.set_colorkey(black)
         self.rect = self.image.get_rect()
         self.rect.x = screen_size[0] - 2*sprite_ratio
@@ -171,10 +184,17 @@ class Game(object):
         self.casa = Casa()
 
         # ****** Variables de objetos
-        self.player.rect.y = 48
-
+        self.player.rect.x = player_pos[0]
+        self.player.rect.y = player_pos[1]
+     
         self.player_vidas.rect.x = 5
         self.player_vidas.rect.y = 5
+
+        self.ghost.rect.x = ghosts[0][0]
+        self.ghost.rect.y = ghosts[0][1]
+
+        self.llave.rect.x = keys[0][0]
+        self.llave.rect.y = keys[0][1]
 
     def restart(self):
         # ****** Variables
@@ -183,16 +203,16 @@ class Game(object):
         self.control_puerta = True  # Puerta cerrada
 
         # ****** Jugador
-        self.player.rect.x = 0
-        self.player.rect.y = 48
+        self.player.rect.x = player_pos[0]
+        self.player.rect.y = player_pos[1]
 
         # ****** Llave
-        self.llave.rect.x = 0
-        self.llave.rect.y = screen_size[1] - 2*sprite_ratio
+        self.llave.rect.x = keys[0][0]
+        self.llave.rect.y = keys[0][1]
 
         # ****** Fantasmas
-        self.ghost.rect.x = screen_size[0] - 2*sprite_ratio
-        self.ghost.rect.y = screen_size[1] - 2*sprite_ratio
+        self.ghost.rect.x = ghosts[0][0]
+        self.ghost.rect.y = ghosts[0][1]
 
     def process_events(self):
         for events in pygame.event.get():
