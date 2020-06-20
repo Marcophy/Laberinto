@@ -1,0 +1,2 @@
+# Laberinto
+Practicas de pygame
