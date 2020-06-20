@@ -2,7 +2,7 @@
 
 import pygame, math, os
 
-# os.chdir('d:\Marco\Documentos\8 - Python\Gusanillo\Pygame')
+# os.chdir('d:\')
 
 version = "Version 0.5"
 
