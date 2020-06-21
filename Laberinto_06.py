@@ -4,7 +4,7 @@ import pygame, math, os
 
 # os.chdir('d:\')
 
-version = "Version 0.5"
+version = "Version 0.6"
 
 # ****** Crear ventana ******
 screen_size = (2490, 1248)
@@ -38,6 +38,8 @@ for linea in archivo.readlines():
         pointer += 1
     elif linea == 'GHOST\n':
         pointer += 1
+    elif linea == 'HOUSE\n':
+        pointer += 1
     else:
         if pointer == 1: # Muros
             linea = tuple(map(int, linea.split(', ')))
@@ -53,6 +55,8 @@ for linea in archivo.readlines():
         elif pointer == 5: # ghost
             linea = tuple(map(int, linea.split(', ')))
             ghosts.append(linea)
+        elif pointer == 6: # house
+            house_pos = tuple(map(int, linea.split(', ')))
 
 archivo.close()
 
@@ -195,6 +199,9 @@ class Game(object):
 
         self.llave.rect.x = keys[0][0]
         self.llave.rect.y = keys[0][1]
+
+        self.casa.rect.x = house_pos[0]
+        self.casa.rect.y = house_pos[1]
 
     def restart(self):
         # ****** Variables
