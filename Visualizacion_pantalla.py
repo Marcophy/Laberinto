@@ -5,7 +5,7 @@ import pygame, math, os
 # os.chdir('d:\')
 
 # ****** Crear ventana ******
-screen_size = (2490, 1248)
+screen_size = (2490, 1248) # Pasar este parámetro al archivo de pantalla o considerar un tamaño para el menú y otro para el juego
 
 black = (0, 0, 0)
 red = (255, 0 , 0)
@@ -16,7 +16,7 @@ yellow = (255, 238, 0)
 # ****** Variables ******
 FPS = 90
 sprite_ratio = 15
-# control_llave = True    # Llave no encontrada
+# control_key = True    # Llave no encontrada
 
 # Muros
 pointer = 0
@@ -24,7 +24,7 @@ muros = []
 puertas = []
 keys = []
 ghosts = []
-archivo = open('pantalla.txt', 'r')
+archivo = open('pantalla_2.txt', 'r')
 for linea in archivo.readlines():
     if linea == 'WALLS\n':
         pointer += 1
@@ -297,7 +297,7 @@ class Game(object):
 
     def display_frame(self, screen):
         screen.fill(black)
-        # Dibujar linea superior
+        # Dibujar read_line superior
         pygame.draw.rect(screen, white, (0, 40, screen_size[0], 5))
 
         # Dibujar vidas
@@ -310,7 +310,7 @@ class Game(object):
 
         # Dibujar muro
         for muro in self.muros:
-            Muro(screen, muro)  # Pinta todo los muros definidos
+            Muro(screen, muro)  # Pinta todo los walls_list definidos
 
         # Dibujar puerta
         if self.control_puerta:

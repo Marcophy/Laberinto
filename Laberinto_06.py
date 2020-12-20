@@ -18,7 +18,7 @@ yellow = (255, 238, 0)
 # ****** Variables ******
 FPS = 60
 sprite_ratio = 15
-# control_llave = True    # Llave no encontrada
+# control_key = True    # Llave no encontrada
 
 # Muros
 pointer = 0
@@ -370,7 +370,7 @@ class Game(object):
                 game_over_pos_y = (screen_size[1] //2) - (game_over_text.get_height() // 2)
                 screen.blit(game_over_text, [game_over_pos_x, game_over_pos_y])
             else:
-                # Dibujar linea superior
+                # Dibujar read_line superior
                 pygame.draw.rect(screen, white, (0, 40, screen_size[0], 5))
 
                 # Dibujar vidas
@@ -383,7 +383,7 @@ class Game(object):
 
                 # Dibujar muro
                 for muro in muros:
-                    Muro(screen, muro)  # Pinta todo los muros definidos
+                    Muro(screen, muro)  # Pinta todo los walls_list definidos
 
                 # Dibujar puerta
                 if self.control_puerta:

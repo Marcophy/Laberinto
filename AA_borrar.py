@@ -27,7 +27,7 @@ for linea in archivo.readlines():
         pointer += 1
     else:
         if pointer == 1: # Muros
-            print('Leyendo muros')
+            print('Leyendo walls_list')
             linea = tuple(map(int, linea.split(', ')))
             muros.append(pygame.Rect(linea))
         elif pointer == 2: # Puerta
