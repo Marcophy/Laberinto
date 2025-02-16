@@ -1,2 +1,2 @@
 # Laberinto
-Practicas de pygame
+Práctica de algoritmos genéticos.
