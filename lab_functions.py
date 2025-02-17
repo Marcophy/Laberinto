@@ -187,6 +187,76 @@ def best_worse(in_population_paths):
     return best, worse
 
 
+def update_map(in_map_array, in_population_paths):
+    ini_location = (np.where(in_map_array == 2)[0][0], np.where(in_map_array == 2)[1][0])
+    goal_location = (np.where(in_map_array == 9)[0][0], np.where(in_map_array == 9)[1][0])
+
+    # Clean the initial map
+    in_map_array[in_map_array == 2] = 0  # Remove the initial position of the NPC
+    in_map_array[in_map_array == 9] = -3  # Remove the position of the goal
+    in_map_array[in_map_array == 1] = -1  # Rescale the walls
+
+
+    best_index = max(range(len(in_population_paths)), key=lambda i: in_population_paths[i][0])
+    best_path = in_population_paths[best_index]
+    best_path.pop(0)
+
+    current_location = ini_location
+    for item in best_path:
+        in_map_array[current_location] += 1
+        # Check the new step
+        if item == 0:  # Right
+            temp_location = (current_location[0], current_location[1] + 1)
+        elif item == 1:  # Up
+            temp_location = (current_location[0] - 1, current_location[1])
+        elif item == 2:  # Left
+            temp_location = (current_location[0], current_location[1] - 1)
+        else:  # Down
+            temp_location = (current_location[0] + 1, current_location[1])
+
+        if check_step(in_map_array, temp_location):
+            current_location = temp_location
+
+    return in_map_array / np.max(in_map_array)
+
+
+def update_map2(in_map_array, in_population_paths):
+    ini_location = (np.where(in_map_array == 2)[0][0], np.where(in_map_array == 2)[1][0])
+    goal_location = (np.where(in_map_array == 9)[0][0], np.where(in_map_array == 9)[1][0])
+
+    # Clean the initial map
+    in_map_array[in_map_array == 2] = 0  # Remove the initial position of the NPC
+    in_map_array[in_map_array == 9] = -3  # Remove the position of the goal
+    in_map_array[in_map_array == 1] = -1  # Rescale the walls
+
+
+    best_index = max(range(len(in_population_paths)), key=lambda i: in_population_paths[i][0])
+    best_path = in_population_paths[best_index]
+    best_path.pop(0)
+
+    current_location = ini_location
+    for item in best_path:
+        in_map_array[current_location] = 1
+        # Check the new step
+        if item == 0:  # Right
+            temp_location = (current_location[0], current_location[1] + 1)
+        elif item == 1:  # Up
+            temp_location = (current_location[0] - 1, current_location[1])
+        elif item == 2:  # Left
+            temp_location = (current_location[0], current_location[1] - 1)
+        else:  # Down
+            temp_location = (current_location[0] + 1, current_location[1])
+
+        if check_step(in_map_array, temp_location):
+            current_location = temp_location
+
+    in_map_array[ini_location] = -2
+    in_map_array[goal_location] = -3
+
+    return in_map_array
+
+
+
 def plot_results(in_generation, in_history, in_alpha, in_map, in_right, in_up, in_left, in_down, in_cmap='viridis'):
     """
     Plot all results about probabilities, the best path, and Score history in the same panel. The result is saved as PNG picture.

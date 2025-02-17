@@ -64,13 +64,24 @@ for generation in range(number_of_generations):
     print(f"{best:.4f} - {worst:.4f}")
 
 # Plot results
-map_array[map_array == 2] = 0  # Remove the initial position of the NPC
-map_array[map_array == 9] = 0  # Remove the position of the goal
-map_array[map_array == 1] = -1  # Rescale the walls
+updated_map = lb.update_map2(map_array, population_paths)
 
-alpha_index = min(range(len(population_paths)), key=lambda i: population_paths[i][0])
+# Crear la figura con dos paneles
+fig, axes = plt.subplots(1, 2, figsize=(10, 5))  # 1 fila, 2 columnas
 
-fig = plt.figure(layout='constrained', figsize=(12, 6))
+# Panel izquierdo: imshow de la array
+im = axes[0].imshow(updated_map, cmap="Greys", aspect="auto")
+plt.colorbar(im, ax=axes[0])  # Añadir barra de color
+
+# Panel derecho: Gráfica de la lista
+axes[1].plot(fitness_progression, linestyle="-", marker="")  # Línea continua sin puntos
+axes[1].set_xlim(left=0)  # Forzar que el eje x empiece en 0
+axes[1].set_xlabel("Fitness")
+axes[1].set_ylabel("# Generation")
+
+# Mostrar la figura
+plt.tight_layout()
+plt.show()
 
 
 
