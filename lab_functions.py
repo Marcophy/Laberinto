@@ -1,7 +1,7 @@
 # ****** Modules ******
 import numpy as np
 import random
-import matplotlib.pyplot as plt
+from tqdm import tqdm
 
 
 # ****** Functions ******
@@ -24,47 +24,48 @@ def select_new_step():
         return 3
 
 
-def check_step(in_array, in_location):
+def check_step(in_array, in_location, in_mode='wall'):
     """
     Check if the new step is valid.
 
     Args:
         in_array (numpy.ndarray): Full map array
         in_location (list): New location
+        in_mode (str): Define the type of detection:
+            'wall': Detect if the NPC hits a wall
+            'wall_plot': Detect if the NPC hits a wall during the results plotting
+            'goal': Detect if the NPC achieves the goal
 
     Returns:
         bool:
     """
 
-    if in_array[in_location[0], in_location[1]] == 1:
-        return False
+    if in_mode == 'wall':
+        if in_array[in_location[0], in_location[1]] == 1:
+            return False
+        else:
+            return True
+
+    if in_mode == 'wall_plot':
+        if in_array[in_location[0], in_location[1]] == -1:
+            return False
+        else:
+            return True
+
+    elif in_mode == 'goal':
+        if in_array[in_location[0], in_location[1]] == 9:
+            return True
+        else:
+            return False
     else:
-        return True
-
-
-def check_goal(in_array, in_location):
-    """
-    Check if the NPC arrived the goal.
-
-    Args:
-        in_array (numpy.ndarray): Full map array
-        in_location (list): New location
-
-    Returns:
-        bool:
-    """
-
-    if in_array[in_location[0], in_location[1]] == 9:
-        return True
-    else:
-        return False
+        print('ERROR')
+        exit()
 
 
 def calculate_fitness(in_map, in_path):
     map_size = np.shape(in_map)
     goal_location = (np.where(in_map == 9)[0][0], np.where(in_map == 9)[1][0])
     location = (np.where(in_map == 2)[0][0], np.where(in_map == 2)[1][0])
-    steps_limit = map_size[0] * map_size[1]
 
     for item in in_path:
         # Check the new step
@@ -77,24 +78,23 @@ def calculate_fitness(in_map, in_path):
         else:  # Down
             temp_location = (location[0] + 1, location[1])
 
-        if check_step(in_map, temp_location):
+        if check_step(in_map, temp_location, 'wall'):
             location = temp_location
 
     d = abs(goal_location[0] - location[0]) + abs(goal_location[1] - location[1])
     if d == 0:
-        return (map_size[0] * map_size[1]) - len(in_path)
+        return int(3 * (map_size[0] * map_size[1]) - len(in_path))
     else:
-        return 1 / (1 + d)
+        return float(1 / (1 + d))
 
 
 def initial_population(in_map_array, in_life_per_generation):
     map_size = np.shape(in_map_array)
-    #  goal_location = (np.where(in_map_array == 9)[0][0], np.where(in_map_array == 9)[1][0])
-    ini_location = (np.where(in_map_array == 2)[0][0], np.where(in_map_array == 2)[1][0])
+    ini_location = (int(np.where(in_map_array == 2)[0][0]), int(np.where(in_map_array == 2)[1][0]))
     steps_limit = map_size[0] * map_size[1]
 
     initial_population_paths = []
-    for life in range(in_life_per_generation):
+    for life in tqdm(range(in_life_per_generation), desc="First generation", ncols=100):
         life_path = []
         current_location = ini_location
         control = True
@@ -114,9 +114,9 @@ def initial_population(in_map_array, in_life_per_generation):
             else:  # Down
                 temp_location = (current_location[0] + 1, current_location[1])
 
-            if check_step(in_map_array, temp_location):
+            if check_step(in_map_array, temp_location, 'wall'):
                 current_location = temp_location
-                if check_goal(in_map_array, current_location):
+                if check_step(in_map_array, current_location, 'goal'):
                     life_path.insert(0, calculate_fitness(in_map_array, life_path))
                     control = False
 
@@ -175,143 +175,65 @@ def survivor_selection(in_population_paths, in_child):
     return in_population_paths
 
 
-def best_worse(in_population_paths):
-    best = -1
-    worse = 3
-    for item in in_population_paths:
-        if item[0] > best:
-            best = item[0]
-        if item[0] < worse:
-            worse = item[0]
+def best_worse(in_population_paths, in_mode='value'):
+    best_value = -1
+    worse_value = 3
 
-    return best, worse
+    best_index = -1
+    worse_index = -1
+
+    cnt = 0
+    for item in in_population_paths:
+        if item[0] > best_value:
+            best_value = item[0]
+            best_index = cnt
+
+        if item[0] < worse_value:
+            worse_value = item[0]
+            worse_index = cnt
+
+        cnt += 1
+
+    if in_mode == 'value':
+        return best_value, worse_value
+    elif in_mode == 'index':
+        return best_index, worse_index
+    else:
+        print('Error')
+        exit()
 
 
 def update_map(in_map_array, in_population_paths):
-    ini_location = (np.where(in_map_array == 2)[0][0], np.where(in_map_array == 2)[1][0])
-    goal_location = (np.where(in_map_array == 9)[0][0], np.where(in_map_array == 9)[1][0])
+    ini_location = (int(np.where(in_map_array == 2)[0][0]), int(np.where(in_map_array == 2)[1][0]))
+    goal_location = (int(np.where(in_map_array == 9)[0][0]), int(np.where(in_map_array == 9)[1][0]))
 
     # Clean the initial map
-    in_map_array[in_map_array == 2] = 0  # Remove the initial position of the NPC
-    in_map_array[in_map_array == 9] = -3  # Remove the position of the goal
     in_map_array[in_map_array == 1] = -1  # Rescale the walls
 
-
-    best_index = max(range(len(in_population_paths)), key=lambda i: in_population_paths[i][0])
-    best_path = in_population_paths[best_index]
+    best_index = best_worse(in_population_paths, 'index')
+    best_path = in_population_paths[best_index[0]]
     best_path.pop(0)
 
     current_location = ini_location
     for item in best_path:
+        # Check the new step
+        if item == 0:  # Right
+            temp_location = (current_location[0], current_location[1] + 1)
+        elif item == 1:  # Up
+            temp_location = (current_location[0] - 1, current_location[1])
+        elif item == 2:  # Left
+            temp_location = (current_location[0], current_location[1] - 1)
+        else:  # Down
+            temp_location = (current_location[0] + 1, current_location[1])
+
+        if check_step(in_map_array, temp_location, 'wall_plot'):
+            current_location = temp_location
+            # in_map_array[current_location] = 1
+
         in_map_array[current_location] += 1
-        # Check the new step
-        if item == 0:  # Right
-            temp_location = (current_location[0], current_location[1] + 1)
-        elif item == 1:  # Up
-            temp_location = (current_location[0] - 1, current_location[1])
-        elif item == 2:  # Left
-            temp_location = (current_location[0], current_location[1] - 1)
-        else:  # Down
-            temp_location = (current_location[0] + 1, current_location[1])
-
-        if check_step(in_map_array, temp_location):
-            current_location = temp_location
-
-    return in_map_array / np.max(in_map_array)
-
-
-def update_map2(in_map_array, in_population_paths):
-    ini_location = (np.where(in_map_array == 2)[0][0], np.where(in_map_array == 2)[1][0])
-    goal_location = (np.where(in_map_array == 9)[0][0], np.where(in_map_array == 9)[1][0])
-
-    # Clean the initial map
-    in_map_array[in_map_array == 2] = 0  # Remove the initial position of the NPC
-    in_map_array[in_map_array == 9] = -3  # Remove the position of the goal
-    in_map_array[in_map_array == 1] = -1  # Rescale the walls
-
-
-    best_index = max(range(len(in_population_paths)), key=lambda i: in_population_paths[i][0])
-    best_path = in_population_paths[best_index]
-    best_path.pop(0)
-
-    current_location = ini_location
-    for item in best_path:
-        in_map_array[current_location] = 1
-        # Check the new step
-        if item == 0:  # Right
-            temp_location = (current_location[0], current_location[1] + 1)
-        elif item == 1:  # Up
-            temp_location = (current_location[0] - 1, current_location[1])
-        elif item == 2:  # Left
-            temp_location = (current_location[0], current_location[1] - 1)
-        else:  # Down
-            temp_location = (current_location[0] + 1, current_location[1])
-
-        if check_step(in_map_array, temp_location):
-            current_location = temp_location
 
     in_map_array[ini_location] = -2
     in_map_array[goal_location] = -3
 
     return in_map_array
 
-
-
-def plot_results(in_generation, in_history, in_alpha, in_map, in_right, in_up, in_left, in_down, in_cmap='viridis'):
-    """
-    Plot all results about probabilities, the best path, and Score history in the same panel. The result is saved as PNG picture.
-
-    Args:
-        in_generation (str): Total number of generations simulated
-        in_history (list): List of all score obtained by each generation simulates
-        in_alpha (list): List with all steps followed for the alpha life [row, column, step direction]
-        in_map (numpy.ndarray): Map of the labyrinth
-        in_right (numpy.ndarray): Step probability map to move in the right direction.
-        in_up (numpy.ndarray): Step probability map to move in the up direction.
-        in_left (numpy.ndarray): Step probability map to move in the left direction.
-        in_down (numpy.ndarray): Step probability map to move in the down direction.
-        in_cmap (str): Color map used for the figures
-
-    Returns: NONE
-    """
-
-    file_name = 'generation_' + str(in_generation) + '.png'  # Name of the output file
-
-    # Record the winner path in the map
-    in_map[in_map == 2] = 0  # Remove the initial position of the NPC
-    in_map[in_map == 9] = 0  # Remove the position of the goal
-    for step in range(len(in_alpha)):
-        in_map[tuple(in_alpha[step][0:2])] += 1
-
-    # Create a figure structure with 2x1 main panels
-    fig = plt.figure(layout='constrained', figsize=(12, 6))
-    subfigs = fig.subfigures(1, 2, wspace=0.07, width_ratios=[2, 1])
-
-    # Figures placed in the left panel
-    axsleft = subfigs[0].subplots(2, 2, sharex=True, sharey=True)
-    subfigs[0].set_facecolor('0.95')
-
-    axsleft[0, 0].set_title('Right')
-    axsleft[0, 1].set_title('Up')
-    axsleft[1, 0].set_title('Left')
-    axsleft[1, 1].set_title('Down')
-
-    pnl1 = axsleft[0, 0].imshow(in_right, cmap=in_cmap, interpolation='nearest', vmin=0, vmax=1)
-    axsleft[0, 1].imshow(in_up, cmap=in_cmap, interpolation='nearest', vmin=0, vmax=1)
-    axsleft[1, 0].imshow(in_left, cmap=in_cmap, interpolation='nearest', vmin=0, vmax=1)
-    axsleft[1, 1].imshow(in_down, cmap=in_cmap, interpolation='nearest', vmin=0, vmax=1)
-    subfigs[0].colorbar(pnl1, shrink=0.6, ax=axsleft, location='bottom')
-
-    # Figures placed in the right panel
-    axsright = subfigs[1].subplots(2, 1, sharex=False, sharey=False)
-    axsright[0].set_title('Best path')
-    axsright[1].set_title('Score each generation')
-    axsright[1].set_xlabel('Generation')
-    axsright[1].set_ylabel('Score')
-
-    pnl5 = axsright[0].imshow(in_map, cmap=in_cmap, interpolation='nearest', vmin=0)
-    plt.colorbar(pnl5, ax=axsright[0], shrink=0.6, location='bottom')
-    axsright[1].plot(list(in_history), '.-')
-
-    # Show the graph
-    plt.savefig(file_name, dpi=300)
