@@ -26,7 +26,7 @@ def select_new_step():
 
 def check_step(in_array, in_location, in_mode='wall'):
     """
-    Check if the new step is valid.
+    Check if the new step hit a wall or achieve the goal.
 
     Args:
         in_array (numpy.ndarray): Full map array
@@ -62,8 +62,21 @@ def check_step(in_array, in_location, in_mode='wall'):
         exit()
 
 
-def calculate_fitness(in_map, in_path):
-    map_size = np.shape(in_map)
+def calculate_fitness(in_map, in_path, in_steps_limit):
+    """
+        Calculate the fitness score of a path.
+        If the path achieve the goal, the output is [2 * in_steps_limit - number of steps]
+        If the path does not achieve the goal, the output is [1 / (1 + d)], where d is the Manhattan distance.
+
+    Args:
+        in_map (numpy.ndarray): Map in array format
+        in_path (list): Full path
+        in_steps_limit (int): Maximum number of the steps allows during the generation.
+
+    Returns:
+        int or float: Fitness score if the path
+    """
+
     goal_location = (np.where(in_map == 9)[0][0], np.where(in_map == 9)[1][0])
     location = (np.where(in_map == 2)[0][0], np.where(in_map == 2)[1][0])
 
@@ -83,18 +96,29 @@ def calculate_fitness(in_map, in_path):
 
     d = abs(goal_location[0] - location[0]) + abs(goal_location[1] - location[1])
     if d == 0:
-        return int(3 * (map_size[0] * map_size[1]) - len(in_path))
+        return int(2 * in_steps_limit - len(in_path))
     else:
         return float(1 / (1 + d))
 
 
-def initial_population(in_map_array, in_life_per_generation):
+def initial_population(in_map_array, in_live_per_generation):
+    """
+    Generate the first generation according to the defined number of lives per generation.
+
+    Args:
+        in_map_array (numpy.ndarray): Map in array format
+        in_live_per_generation (int): Number of lives per generation
+
+    Returns:
+        list: List of all paths of the population.
+    """
+
     map_size = np.shape(in_map_array)
     ini_location = (int(np.where(in_map_array == 2)[0][0]), int(np.where(in_map_array == 2)[1][0]))
     steps_limit = map_size[0] * map_size[1]
 
     initial_population_paths = []
-    for life in tqdm(range(in_life_per_generation), desc="First generation", ncols=100):
+    for life in tqdm(range(in_live_per_generation), desc="First generation", ncols=100):
         life_path = []
         current_location = ini_location
         control = True
@@ -117,12 +141,12 @@ def initial_population(in_map_array, in_life_per_generation):
             if check_step(in_map_array, temp_location, 'wall'):
                 current_location = temp_location
                 if check_step(in_map_array, current_location, 'goal'):
-                    life_path.insert(0, calculate_fitness(in_map_array, life_path))
+                    life_path.insert(0, calculate_fitness(in_map_array, life_path, steps_limit))
                     control = False
 
             cnt_step += 1
             if cnt_step > steps_limit:
-                life_path.insert(0, calculate_fitness(in_map_array, life_path))
+                life_path.insert(0, calculate_fitness(in_map_array, life_path, steps_limit))
                 control = False
 
         initial_population_paths.append(life_path)
@@ -131,6 +155,17 @@ def initial_population(in_map_array, in_life_per_generation):
 
 
 def tournament_selection(in_population_paths, in_team_size):
+    """
+    Selection based on the tournament method.
+
+    Args:
+        in_population_paths (list): List of all paths of the population
+        in_team_size (int): Size of each team
+
+    Returns:
+        list, list: Path of the first and second-best candidate.
+    """
+
     # First candidate
     for player in range(in_team_size):
         index = random.randint(0, len(in_population_paths) - 1)
@@ -153,6 +188,17 @@ def tournament_selection(in_population_paths, in_team_size):
 
 
 def crossover(in_first, in_second):
+    """
+    Crossover two candidates.
+
+    Args:
+        in_first (list): Path of the first candidate.
+        in_second (list): Path of the second candidate.
+
+    Returns:
+        list: Child path.
+    """
+
     cut_first = random.randint(0, len(in_first) - 1)
     cut_second = random.randint(0, len(in_second) - 1)
 
@@ -161,6 +207,16 @@ def crossover(in_first, in_second):
 
 
 def mutation(in_child, in_mutation_prob):
+    """
+    Applied mutations to the new child according to the mutation probability.
+    Args:
+        in_child (list): Path of the child.
+        in_mutation_prob (float): Mutation probability
+
+    Returns:
+        list: Path of the child after mutations
+    """
+
     for index in range(len(in_child)):
         if np.random.rand() < in_mutation_prob:
             in_child[index] = random.randint(0, 3)
@@ -168,14 +224,38 @@ def mutation(in_child, in_mutation_prob):
 
 
 def survivor_selection(in_population_paths, in_child):
-    weak_member = min(range(len(in_population_paths)), key=lambda i: in_population_paths[i][0])
+    """
+    Replace the worst member of the population with the new child.
 
-    in_population_paths[weak_member] = in_child
+    Args:
+        in_population_paths (list): List of path of the population
+        in_child (list): Path of the new child
+
+    Returns:
+        list: List of path of the new population
+    """
+
+    weak_member = best_worse(in_population_paths, 'index')
+
+    in_population_paths[weak_member[1]] = in_child
 
     return in_population_paths
 
 
 def best_worse(in_population_paths, in_mode='value'):
+    """
+    Obtain the fitness score or the index of the best and worse member of the population.
+
+    Args:
+        in_population_paths (list):
+        in_mode (str): Output mode selection.
+            'value': return the fitness scores
+            'index': return the index of the best and worse candidates in the population list
+
+    Returns:
+        int or float: Fitness score or index
+    """
+
     best_value = -1
     worse_value = 3
 
