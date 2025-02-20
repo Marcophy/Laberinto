@@ -30,7 +30,7 @@ def check_step(in_array, in_location, in_mode='wall'):
 
     Args:
         in_array (numpy.ndarray): Full map array
-        in_location (list): New location
+        in_location (tuple): New location
         in_mode (str): Define the type of detection:
             'wall': Detect if the NPC hits a wall
             'wall_plot': Detect if the NPC hits a wall during the results plotting
@@ -101,21 +101,20 @@ def calculate_fitness(in_map, in_path, in_steps_limit):
         return float(1 / (1 + d))
 
 
-def initial_population(in_map_array, in_live_per_generation):
+def initial_population(in_map_array, in_live_per_generation, in_steps_limit):
     """
     Generate the first generation according to the defined number of lives per generation.
 
     Args:
         in_map_array (numpy.ndarray): Map in array format
         in_live_per_generation (int): Number of lives per generation
+        in_steps_limit (int): Maximum number of the steps allows during the generation.
 
     Returns:
         list: List of all paths of the population.
     """
 
-    map_size = np.shape(in_map_array)
     ini_location = (int(np.where(in_map_array == 2)[0][0]), int(np.where(in_map_array == 2)[1][0]))
-    steps_limit = map_size[0] * map_size[1]
 
     initial_population_paths = []
     for life in tqdm(range(in_live_per_generation), desc="First generation", ncols=100):
@@ -141,12 +140,12 @@ def initial_population(in_map_array, in_live_per_generation):
             if check_step(in_map_array, temp_location, 'wall'):
                 current_location = temp_location
                 if check_step(in_map_array, current_location, 'goal'):
-                    life_path.insert(0, calculate_fitness(in_map_array, life_path, steps_limit))
+                    life_path.insert(0, calculate_fitness(in_map_array, life_path, in_steps_limit))
                     control = False
 
             cnt_step += 1
-            if cnt_step > steps_limit:
-                life_path.insert(0, calculate_fitness(in_map_array, life_path, steps_limit))
+            if cnt_step > in_steps_limit:
+                life_path.insert(0, calculate_fitness(in_map_array, life_path, in_steps_limit))
                 control = False
 
         initial_population_paths.append(life_path)
@@ -247,7 +246,7 @@ def best_worse(in_population_paths, in_mode='value'):
     Obtain the fitness score or the index of the best and worse member of the population.
 
     Args:
-        in_population_paths (list):
+        in_population_paths (list): List of path of the population
         in_mode (str): Output mode selection.
             'value': return the fitness scores
             'index': return the index of the best and worse candidates in the population list
@@ -257,7 +256,7 @@ def best_worse(in_population_paths, in_mode='value'):
     """
 
     best_value = -1
-    worse_value = 3
+    worse_value = 1e99
 
     best_index = -1
     worse_index = -1
@@ -284,6 +283,17 @@ def best_worse(in_population_paths, in_mode='value'):
 
 
 def update_map(in_map_array, in_population_paths):
+    """
+    Update the map including the best path for plotting.
+
+    Args:
+        in_map_array (numpy.ndarray): Map in array format
+        in_population_paths (list): List of path of the population
+
+    Returns:
+        numpy.ndarray: Map updated with the best path
+    """
+
     ini_location = (int(np.where(in_map_array == 2)[0][0]), int(np.where(in_map_array == 2)[1][0]))
     goal_location = (int(np.where(in_map_array == 9)[0][0]), int(np.where(in_map_array == 9)[1][0]))
 

@@ -54,7 +54,7 @@ fitness_progression = []
 print('Generating initial population ...')
 time.sleep(1)
 
-population_paths = lb.initial_population(map_array, live_per_generation)
+population_paths = lb.initial_population(map_array, live_per_generation, steps_limit)
 fitness_progression.append(lb.best_worse(population_paths)[0])
 best, worst = lb.best_worse(population_paths, 'value')
 
