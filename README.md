@@ -37,16 +37,15 @@ Example for `N=5`:
 ## **3. Fitness Function**  
 The **fitness function** evaluates how close an individual is to the exit. We define it as:  
 
-$\text{Fitness} = \frac{1}{1 + d}$
+$$\text{Fitness} = \frac{1}{1 + d}$$
 
 Where:  
-- \( d \) = **Manhattan distance** from the final position of the sequence to the exit.  
-- If the sequence reaches the exit exactly, give it a high fitness score (e.g., `1000`).  
+- *d* = **Manhattan distance** from the final position of the sequence to the exit.  
+- If the sequence reaches the exit exactly, give it a high fitness score (*e.g., 1000*).  
 
 ## **4. Selection**  
 Select parents using **Tournament Selection** or **Roulette Wheel Selection**:  
-- **Tournament Selection**: Pick `k` random individuals and select the one with the best fitness.  
-- **Roulette Wheel**: Assign a probability to each individual based on fitness and select probabilistically.  
+- **Tournament Selection**: Pick **k** random individuals and select the one with the best fitness.
 
 ## **5. Crossover (Recombination)**  
 Combine two parent chromosomes to create offspring.  
@@ -60,7 +59,7 @@ Combine two parent chromosomes to create offspring.
   - Crossover at position 4 → Child: `"2230330012"`  
 
 ## **6. Mutation**  
-With a small probability (e.g., `5%`), randomly mutate a gene (change a move).  
+With a small probability (*e.g., 5%*), randomly mutate a gene (change a move).  
 Example:  
   - `"2230330012"` → Mutation at position 3 → `"2200330012"`  
 
@@ -77,11 +76,11 @@ Stop when:
 
 # How to use LABERINTO
 To use the [LABERINTO](https://github.com/Marcophy/Laberinto), you need to run the **main.py** file. However, you must initially configure a number of parameters included directly in the code. These parameters are included at the beginning of the script in the section called **Initial Variables**. These variables are:
-- `map_path` = Name of the map you want to use (*Ex. 'map_01.map'*). All maps are placed in the *Maps* folder.
-- `number_of_generations` = Number of generations (*Ex. 10000*).
-- `live_per_generation` = Number of people in each generation (*Ex. 1000*).
-- `team_size` = Size of the team of the tournament selection method (*Ex. 10*). *Note: See theoretical section*
-- `mutation_prob` = Mutation probability (*Ex. 0.05*)
+- `map_path` = Name of the map you want to use (*e.g., 'map_01.map'*). All maps are placed in the *Maps* folder.
+- `number_of_generations` = Number of generations (*e.g., 10000*).
+- `live_per_generation` = Number of people in each generation (*e.g., 1000*).
+- `team_size` = Size of the team of the tournament selection method (*e.g., 10*). *Note: See theoretical section*
+- `mutation_prob` = Mutation probability between [0, 1] (*e.g., 0.05*).
 
 Once the calculations are finished, the map with the best path found and the evolution of the fitness score are shown. At the same time, this figure will be saved in the **Output** folder. The information related to the result will be saved in the file **results_database.txt** located in the same folder.
 
