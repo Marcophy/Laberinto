@@ -25,10 +25,10 @@ import lab_functions as lb
 # User variables
 map_path = 'map_01.map'  # See Maps folder
 number_of_generations = 10000
-live_per_generation = 1000
+live_per_generation = 500
 team_size = 10  # Team size of the tournament selection method
 mutation_prob = 0.05  # Mutation probability
-ancestors_flag = True  # Enable/disable life loading for the first generation
+ancestors_flag = False  # Enable/disable life loading for the first generation
 ancestors_path = 'ancestral_paths.txt'  # Name of the file with the initial live
 
 # Internal variables
