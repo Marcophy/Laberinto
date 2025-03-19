@@ -9,7 +9,7 @@ __project_name__ = "Labyrinth genetic algorithm"
 __author__ = "Marco A. Villena"
 __email__ = "mavillena@ugr.es"
 __project_date__ = "2023 - 2025"
-__version__ = "1.0"
+__version__ = "1.1"
 
 # ****** Modules ******
 import os
@@ -26,8 +26,10 @@ import lab_functions as lb
 map_path = 'map_01.map'  # See Maps folder
 number_of_generations = 10000
 live_per_generation = 1000
-team_size = 10  # Team size of the tournament selection method.
+team_size = 10  # Team size of the tournament selection method
 mutation_prob = 0.05  # Mutation probability
+ancestors_flag = True  # Enable/disable life loading for the first generation
+ancestors_path = 'ancestral_paths.txt'  # Name of the file with the initial live
 
 # Internal variables
 output_plot = map_path.replace(".map", ".jpg")
@@ -55,6 +57,14 @@ print('Generating initial population ...')
 time.sleep(1)
 
 population_paths = lb.initial_population(map_array, live_per_generation, steps_limit)
+
+if ancestors_flag:  # Load the initial paths from file
+    ancestral_paths = lb.load_ancestors(os.path.join(work_folder, ancestors_path))
+
+    for item in ancestral_paths:
+        item.insert(0, lb.calculate_fitness(map_array, item, steps_limit))
+        population_paths.append(item)
+
 fitness_progression.append(lb.best_worse(population_paths)[0])
 best, worst = lb.best_worse(population_paths, 'value')
 

@@ -5,6 +5,25 @@ from tqdm import tqdm
 
 
 # ****** Functions ******
+def load_ancestors(in_path):
+    """
+    Load additional paths for the initial population from a txt file.
+
+    Args:
+        in_path (str): Name of the file with the paths are storage.
+
+    Returns:
+        list: List of all loaded paths in the correct format.
+    """
+
+    with open(in_path, 'r') as file:
+        ancestral_lives = file.readlines()
+
+    ancestors_list = [[int(digit) for digit in linea.strip()] for linea in ancestral_lives]
+
+    return ancestors_list
+
+
 def select_new_step():
     """
     Function to generate a new step
@@ -326,4 +345,3 @@ def update_map(in_map_array, in_population_paths):
     in_map_array[goal_location] = -3
 
     return in_map_array
-

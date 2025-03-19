@@ -80,7 +80,9 @@ To use the [LABERINTO](https://github.com/Marcophy/Laberinto), you need to run t
 - `number_of_generations` = Number of generations (*e.g., 10000*).
 - `live_per_generation` = Number of people in each generation (*e.g., 1000*).
 - `team_size` = Size of the team of the tournament selection method (*e.g., 10*). *Note: See theoretical section*
-- `mutation_prob` = Mutation probability between [0, 1] (*e.g., 0.05*).
+- `mutation_prob` = Mutation probability in the [0, 1] range (*e.g., 0.05*).
+- `ancestors_flag` = Enable/disable load paths from file for the initial population.
+- `ancestors_path` = Name of the file with additional paths. (*Default: ancestral_paths.txt*)
 
 Once the calculations are finished, the map with the best path found and the evolution of the fitness score are shown. At the same time, this figure will be saved in the **Output** folder. The information related to the result will be saved in the file **results_database.txt** located in the same folder.
 
